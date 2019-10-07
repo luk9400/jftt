@@ -59,7 +59,9 @@ public class Matcher {
   }
 
   public static void main(String[] args) {
-    Matcher matcher = new Matcher("ab", "cabab");
+    Matcher matcher = new Matcher("ababaca", "abababacaba");
     matcher.finiteAutomatonMatcher();
+
+    KMPMatcher.kmpMatcher("ababaca", "abababacaba");
   }
 }
