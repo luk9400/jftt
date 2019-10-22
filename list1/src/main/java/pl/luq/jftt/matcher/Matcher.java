@@ -9,14 +9,13 @@ public class Matcher {
   private Set<Character> sigma;
   private ArrayList<HashMap<Character, Integer>> delta;
   private String pattern;
-  private String text;
 
-  public Matcher(String pattern, String text) {
+
+  public Matcher(String pattern, String alphabet) {
     this.pattern = pattern;
-    this.text = text;
 
     sigma = new HashSet<>();
-    for (char a : text.toCharArray()) {
+    for (char a : alphabet.toCharArray()) {
       sigma.add(a);
     }
 
@@ -25,12 +24,22 @@ public class Matcher {
       delta.add(new HashMap<>(sigma.size()));
     }
     computeTransitionFunction();
+    //showTransitionFunction();
   }
 
-  public void showTransitionFunction(){
+  private void showTransitionFunction(){
     for (int i = 0; i <= pattern.length(); i++) {
       System.out.println(delta.get(i).toString());
     }
+  }
+
+  private boolean checkText(String text) {
+    for (char c : text.toCharArray()) {
+      if (!sigma.contains(c)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public void computeTransitionFunction() {
@@ -47,7 +56,11 @@ public class Matcher {
     }
   }
 
-  public void finiteAutomatonMatcher() {
+  public void finiteAutomatonMatcher(String text) {
+    if (!checkText(text)) {
+      System.out.println("Text contains illegal characters");
+      return;
+    }
     int n = text.length();
     int q = 0;
     for (int i = 0; i < n; i++) {
@@ -58,10 +71,26 @@ public class Matcher {
     }
   }
 
-  public static void main(String[] args) {
-    Matcher matcher = new Matcher("ababaca", "abababacaba");
-    matcher.finiteAutomatonMatcher();
+  public static void tests() {
+    String alphabet = "αβγδ";
+    String[] patterns = {"δ", "γδ", "αβ", "αβαβ"};
+    String textToTest = "αβαβγβαβαβαβαβγ";
 
-    KMPMatcher.kmpMatcher("ababaca", "abababacaba");
+    for (String pattern : patterns) {
+      System.out.println(pattern);
+      Matcher matcher = new Matcher(pattern, alphabet);
+      matcher.finiteAutomatonMatcher(textToTest);
+
+      KMPMatcher.kmpMatcher(pattern, textToTest);
+    }
+
+  }
+
+  public static void main(String[] args) {
+    tests();
+//    Matcher matcher = new Matcher("ababaca", "abc");
+//    matcher.finiteAutomatonMatcher("abababacaba");
+//
+//    KMPMatcher.kmpMatcher("ababaca", "abababacaba");
   }
 }
