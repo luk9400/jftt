@@ -11,12 +11,20 @@ int err = 0;
 
 int pop() {
     top--;
+    if (top < 0) {
+        err = 1;
+        return 0;
+    }
     return stack[top];
 }
 
 void push(int val) {
-    stack[top] = val;
-    top++;
+    if (top < STACK_SIZE) {
+        stack[top] = val;
+        top++;
+    } else {
+        err = 1;
+    }
 }
 
 int isEmpty() {
@@ -45,26 +53,36 @@ int power(int a, int b) {
 
 %%
 -?[[:digit:]]+      {
-                        if (!isFull()) {
-                            push(atoi(yytext));
-                        } else {
-                            err = 1;
-                            BEGIN(ERROR);
-                        }
+                        push(atoi(yytext));
+                        if (err) BEGIN(ERROR);
                     };
 
-"+"                 push(pop() + pop());
+"+"                 {
+                        push(pop() + pop());
+                        printf("%d", err);
+                        if (err) BEGIN(ERROR);
+                    };
 
-"*"                 push(pop() * pop());
+"*"                 {
+                        push(pop() * pop());
+                        if (err) BEGIN(ERROR);
+                    };
 
 "/"                 {   
                         int a = pop();
-                        push(pop() / a);
+                        if (a == 0) {
+                            printf("Nie dzielimy przez zero.\n");
+                            BEGIN(ERROR);
+                        } else {
+                            push(pop() / a);
+                        }
+                        if (err) BEGIN(ERROR);
                     };
 
 -                   {
                         int a = pop();
                         push(pop() - a);
+                        if (err) BEGIN(ERROR);
                     };
 
 "^"                 {
@@ -74,16 +92,34 @@ int power(int a, int b) {
                             BEGIN(ERROR);
                         } else {
                             push(power(pop(), a));
-                        } 
+                        }
+                        if (err) BEGIN(ERROR); 
                     };
+
+"%"                 {
+                        int a = pop();
+                        if (a == 0) {
+                            printf("Nie dzielimy przez zero.\n");
+                            BEGIN(ERROR);
+                        } else {
+                            push(pop() % a);
+                        }
+                        if (err) BEGIN(ERROR);
+                    };                    
 
 \n                  printf("= %d\n", pop());
 
 [[:blank:]]         ;
+[^[:blank:]]        {
+                        printf("Zły symbol: %s\n", yytext);
+                        BEGIN(ERROR);
+                    };
+
 
 <ERROR>.*           ;
 <ERROR>\n           {
                         top = 0;
+                        err = 0;
                         BEGIN(INITIAL);
                     };
 %%
