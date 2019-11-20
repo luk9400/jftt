@@ -12,25 +12,38 @@ int yylex();
 
     int err = 0;
     char* str = "";
+
+    int docs = 0;
 %}
+
+singleline      \/[\\\n]*\/
+multiline       \/[\\\n]*\*
+multilineEnd    \*[\\\n]*\/
+
 
 %x singleLine
 %x multiLine
 %x string
+%x include
 
 %%
-\/\/                BEGIN(singleLine);
-<singleLine>.       ;
-<singleLine>\n      BEGIN(INITIAL);
+{singleline}                BEGIN(singleLine);
+<singleLine>.               ;
+<singleLine>\n              BEGIN(INITIAL);
 
 
 
-\/\*                BEGIN(multiLine);
-<multiLine>.|\n     ;
-<multiLine>\*\/     BEGIN(INITIAL);
+{multiline}                 BEGIN(multiLine);
+<multiLine>.|\n             ;
+<multiLine>{multilineEnd}   BEGIN(INITIAL);
 
-\"                  { ECHO; BEGIN(string); };
-<string>\"        { ECHO; BEGIN(INITIAL); };
+\"                          { ECHO; BEGIN(string); };
+<string>\"                  { ECHO; BEGIN(INITIAL); };
+
+#include[[:blank:]]*\<      { ECHO; BEGIN(include); };
+<include>\>                 { ECHO; BEGIN(INITIAL); };
+<include>.|\n               ECHO;
+               
 %%
 int yywrap() {
     return 1;
