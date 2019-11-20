@@ -13,13 +13,14 @@ int yylex();
     int err = 0;
     char* str = "";
 
-    int docs = 0;
+    int docs = 1;
 %}
 
 singleline      \/[\\\n]*\/
+singlelineDoc   \/[\\\n]*\/(\/|!)
 multiline       \/[\\\n]*\*
+multilineDoc    \/[\\\n]*\*[\\\n]*(\*|!)
 multilineEnd    \*[\\\n]*\/
-
 
 %x singleLine
 %x multiLine
@@ -27,12 +28,14 @@ multilineEnd    \*[\\\n]*\/
 %x include
 
 %%
+{singlelineDoc}             { if (docs) ECHO; else BEGIN(singleLine); };
 {singleline}                BEGIN(singleLine);
+<singleLine>.*\\\n          ;
 <singleLine>.               ;
-<singleLine>\n              BEGIN(INITIAL);
+<singleLine>[^\\]\n         BEGIN(INITIAL);
 
 
-
+{multilineDoc}              { if (docs) ECHO; else BEGIN(multiLine); };
 {multiline}                 BEGIN(multiLine);
 <multiLine>.|\n             ;
 <multiLine>{multilineEnd}   BEGIN(INITIAL);
