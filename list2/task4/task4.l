@@ -12,6 +12,7 @@ int err = 0;
 int pop() {
     top--;
     if (top < 0) {
+        printf("Za mało arugmentów\n");
         err = 1;
         return 0;
     }
@@ -23,19 +24,8 @@ void push(int val) {
         stack[top] = val;
         top++;
     } else {
+        printf("Overflow");
         err = 1;
-    }
-}
-
-int isEmpty() {
-    return top == 0 ? 1 : 0;
-}
-
-int isFull() {
-    if (top == STACK_SIZE - 1) {
-        return 1;
-    } else {
-        return 0;
     }
 }
 
@@ -59,7 +49,6 @@ int power(int a, int b) {
 
 "+"                 {
                         push(pop() + pop());
-                        printf("%d", err);
                         if (err) BEGIN(ERROR);
                     };
 
@@ -107,14 +96,20 @@ int power(int a, int b) {
                         if (err) BEGIN(ERROR);
                     };                    
 
-\n                  printf("= %d\n", pop());
+\n                  {
+                        if (top == 1) {
+                            printf("= %d\n", pop());
+                        } else if (top > 1) {
+                            printf("Za dużo argumentów\n");
+                            top = 0;
+                        }
+                    };
 
-[[:blank:]]         ;
 [^[:blank:]]        {
                         printf("Zły symbol: %s\n", yytext);
                         BEGIN(ERROR);
                     };
-
+[[:blank:]]         ;
 
 <ERROR>.*           ;
 <ERROR>\n           {
