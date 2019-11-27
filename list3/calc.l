@@ -1,8 +1,7 @@
-
 %option noyywrap
 %option yylineno
 %{
-#include "calc.tab.hpp"
+#include "calc.tab.h"
 
 int yylex();
 %}

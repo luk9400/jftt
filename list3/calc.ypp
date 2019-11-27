@@ -5,16 +5,11 @@
   #include <math.h>
   #include <string>
 
+  using namespace std;
+
   int yylex();
   int yyerror(string);
   extern int yylineno;
-
-  char* concat(const char* str1, const char* str2) {
-    char* result = malloc(strlen(str1) + strlen(str2) + 1);
-    strcpy(result, str1);
-    strcat(result, str2);
-    return result; 
-  }
 
   string rpn = "";
   int error = 0;
@@ -30,6 +25,7 @@
 %precedence NEG
 
 %token END
+%token ERROR
 
 %% /* Grammar rules and actions follow. */
 
@@ -40,7 +36,7 @@ input:
 
 line:   expr END {
                     if (!error) {
-                        printf("%s\n= %d\n", rpn, $$);
+                        printf("%s\n= %d\n", rpn.c_str(), $$);
                     }
                     error = 0;
                     rpn = "";
@@ -65,26 +61,28 @@ expr:
                                       $$ = $1 / $3;
                                   } 
                                 }
-    | expr MOD expr             { rpn += "%% ";
+    | expr MOD expr             { rpn += "% ";
                                   if ($3 == 0) {
                                       yyerror("Nie modulujemy przez 0");
                                   } else {
+                                      // trza jeszcze nad znakiem popracować
                                       $$ = $1 % $3;
                                   } 
                                 }
-    | MINUS expr %prec NEG      { rpn += "-"; $$ = -$2 }
+    | MINUS expr %prec NEG      { rpn += "-"; $$ = -$2; }
     | expr POW expr             { rpn += "^ "; $$ = pow($1, $3); }
-    | LBRACKET expr RBRACKET    { $$ = $2 }
+    | LBRACKET expr RBRACKET    { $$ = $2; }
 ;
 
 %%
 
 int yyerror(string str) {
     error = 1;
-    printf("%s\n", str);
+    printf("%s\n", str.c_str());
     return 0;
 }
 
 int main () {
+  printf("%d\n", -4%3);
   return yyparse();
 }
